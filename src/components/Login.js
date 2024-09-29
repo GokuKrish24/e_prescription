@@ -4,7 +4,7 @@ import Web3 from 'web3';
 import '../styles/styles.css';
 import UserLoginArtifact from '../contracts/UserLogin.json'; // Updated path
 
-const contractAddress = "0x537E7432130dA1e6fD0807A0453730D4C8a4B448"; // Replace with your actual contract address
+const contractAddress = "0x528517CEa6A78d854095e5a237E2219B93F6e245"; // Replace with your actual contract address
 
 const Login = ({ web3, setContract, setAccount, setIsLoggedIn, setUserRole }) => {
     const [username, setUsername] = useState('');
@@ -89,7 +89,10 @@ const Login = ({ web3, setContract, setAccount, setIsLoggedIn, setUserRole }) =>
                     </select>
                 </div>
                 <button className="btn btn-primary btn-block mb-2" onClick={handleLogin}>Login</button>
-                <button className="btn btn-secondary btn-block" onClick={handleRegister}>Register</button>
+                {/* Show register button only if role is patient */}
+                {role === 'patient' && (
+                    <button className="btn btn-secondary btn-block" onClick={handleRegister}>Register</button>
+                )}
             </div>
         </div>
     );

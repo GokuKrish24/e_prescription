@@ -30,22 +30,29 @@ const App = () => {
         initWeb3();
     }, []);
 
+    // Handle logging out
+    const handleLogout = () => {
+        setIsLoggedIn(false);
+        setUserRole(''); // Clear the user role
+    };
+
     const renderDashboard = () => {
-        if (userRole === 'patient') {
-            return <PatientDashboard />;
-        } else if (userRole === 'doctor') {
-            return <DoctorDashboard />;
-        } else if (userRole === 'pharmacy') {
-            return <PharmacyDashboard />;
-        } else {
-            return <Navigate to="/" />;
+        switch (userRole) {
+            case 'patient':
+                return <PatientDashboard />;
+            case 'doctor':
+                return <DoctorDashboard />;
+            case 'pharmacy':
+                return <PharmacyDashboard />;
+            default:
+                return <Navigate to="/" />;
         }
     };
 
     return (
         <Router>
             {/* Navbar will be shown only if the user is logged in */}
-            {isLoggedIn && <Navbar account={account} />}
+            {isLoggedIn && <Navbar account={account} onLogout={handleLogout} />}
 
             <Routes>
                 <Route
