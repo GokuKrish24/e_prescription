@@ -3,9 +3,29 @@ import React from 'react';
 
 const PatientDashboard = () => {
     return (
-        <div>
-            <h2>Patient Dashboard</h2>
-            <p>Welcome, Patient! Here you can book appointments and view your prescriptions.</p>
+        <div className="container mt-5">
+            <div className="row">
+                <div className="col-md-6">
+                    <div className="card">
+                        <div className="card-header">
+                            <h2>My Appointments</h2>
+                        </div>
+                        <div className="card-body">
+                            <p>View your upcoming appointments here.</p>
+                        </div>
+                    </div>
+                </div>
+                <div className="col-md-6">
+                    <div className="card">
+                        <div className="card-header">
+                            <h2>My Prescriptions</h2>
+                        </div>
+                        <div className="card-body">
+                            <p>View all your prescriptions here.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };

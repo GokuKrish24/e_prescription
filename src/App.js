@@ -2,17 +2,18 @@
 import React, { useEffect, useState } from 'react';
 import Web3 from 'web3';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './components/Login'; // Import the login component
-import PatientDashboard from './components/PatientDashboard'; // Import the patient dashboard
-import DoctorDashboard from './components/DoctorDashboard'; // Import the doctor dashboard
-import PharmacyDashboard from './components/PharmacyDashboard'; // Import the pharmacy dashboard
+import PatientDashboard from './components/PatientDashboard'; // Import PatientDashboard component
+import DoctorDashboard from './components/DoctorDashboard'; // Import DoctorDashboard component
+import PharmacyDashboard from './components/PharmacyDashboard'; // Import PharmacyDashboard component
+import Login from './components/Login'; // Import Login component
+import Navbar from './components/Navbar'; // Import Navbar component
 
 const App = () => {
     const [web3, setWeb3] = useState(null);
     const [contract, setContract] = useState(null);
     const [account, setAccount] = useState('');
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [userRole, setUserRole] = useState(''); // Add state to store user role
+    const [userRole, setUserRole] = useState(''); // State for the role
 
     useEffect(() => {
         const initWeb3 = async () => {
@@ -29,16 +30,41 @@ const App = () => {
         initWeb3();
     }, []);
 
+    const renderDashboard = () => {
+        if (userRole === 'patient') {
+            return <PatientDashboard />;
+        } else if (userRole === 'doctor') {
+            return <DoctorDashboard />;
+        } else if (userRole === 'pharmacy') {
+            return <PharmacyDashboard />;
+        } else {
+            return <Navigate to="/" />;
+        }
+    };
+
     return (
         <Router>
+            {/* Navbar will be shown only if the user is logged in */}
+            {isLoggedIn && <Navbar account={account} />}
+
             <Routes>
                 <Route
                     path="/"
-                    element={isLoggedIn ? <Navigate to={`/${userRole}Dashboard`} /> : <Login web3={web3} setContract={setContract} setAccount={setAccount} setIsLoggedIn={setIsLoggedIn} setUserRole={setUserRole} />}
+                    element={
+                        isLoggedIn ? (
+                            renderDashboard()
+                        ) : (
+                            <Login
+                                web3={web3}
+                                setContract={setContract}
+                                setAccount={setAccount}
+                                setIsLoggedIn={setIsLoggedIn}
+                                setUserRole={setUserRole}
+                            />
+                        )
+                    }
                 />
-                <Route path="/patientDashboard" element={isLoggedIn && userRole === 'patient' ? <PatientDashboard /> : <Navigate to="/" />} />
-                <Route path="/doctorDashboard" element={isLoggedIn && userRole === 'doctor' ? <DoctorDashboard /> : <Navigate to="/" />} />
-                <Route path="/pharmacyDashboard" element={isLoggedIn && userRole === 'pharmacy' ? <PharmacyDashboard /> : <Navigate to="/" />} />
+                <Route path="/dashboard" element={isLoggedIn ? renderDashboard() : <Navigate to="/" />} />
             </Routes>
         </Router>
     );
