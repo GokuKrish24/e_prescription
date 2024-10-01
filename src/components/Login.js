@@ -4,7 +4,7 @@ import Web3 from 'web3';
 import '../styles/styles.css';
 import UserLoginArtifact from '../contracts/UserLogin.json'; // Updated path
 
-const contractAddress = "0xb392c67235E61239ee48093D929Bf23A7cF69F25"; // Replace with your actual contract address
+const contractAddress = "0x9a5E906678D40a7c17d078bF71808216fA7f9256"; // Replace with your actual contract address
 
 const Login = ({ web3, setContract, setAccount, setIsLoggedIn, setUserRole }) => {
     const [username, setUsername] = useState('');
