@@ -4,7 +4,7 @@ import Web3 from 'web3';
 import '../styles/styles.css';
 import UserLoginArtifact from '../contracts/UserLogin.json'; // Updated path
 
-const contractAddress = "0x528517CEa6A78d854095e5a237E2219B93F6e245"; // Replace with your actual contract address
+const contractAddress = "0xb392c67235E61239ee48093D929Bf23A7cF69F25"; // Replace with your actual contract address
 
 const Login = ({ web3, setContract, setAccount, setIsLoggedIn, setUserRole }) => {
     const [username, setUsername] = useState('');
@@ -40,7 +40,7 @@ const Login = ({ web3, setContract, setAccount, setIsLoggedIn, setUserRole }) =>
             const contract = new web3.eth.Contract(UserLoginArtifact.abi, contractAddress);
             setContract(contract);
             try {
-                await contract.methods.register(username, password, role).send({ from: accounts[0] });
+                await contract.methods.registerPatient(username, password, role).send({ from: accounts[0] });
                 alert('User registered successfully!');
             } catch (error) {
                 setErrorMessage('Registration failed. Error: ' + error.message);
