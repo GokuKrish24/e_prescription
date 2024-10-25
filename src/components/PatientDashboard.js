@@ -12,14 +12,18 @@ const PatientDashboard = () => {
     const [patientAge, setPatientAge] = useState("");
     const [patientGender, setPatientGender] = useState("");
     const [patientContact, setPatientContact] = useState("");
+    const [patientAppointmentDate, setPatientAppointmentDate] = useState("");
+    const [patientAppointmentTime, setPatientAppointmentTime] = useState("");
 
     // Predefined list of departments
     const departments = ["Neurology", "Dermatology", "Cardiology", "Orthopedic"];
+    
+    // Current appointments state
+    const [currentAppointments, setCurrentAppointments] = useState([]);
 
-    // Move contractAddress declaration here
-    const contractAddress = "0x7e69a79ba39F9592Ca544DA42B38215E8cB30FcA"; // Replace with your actual contract address
+    const contractAddress = "0xd0fFF5F7c965140C36aB21C0D7f20f6c47C815E1"; // Replace with your actual contract address
 
-    // Fetch doctors whenever the selected department changes
+    // Fetch doctors and current appointments whenever the selected department changes
     useEffect(() => {
         const fetchDoctors = async () => {
             if (typeof window.ethereum !== "undefined") {
@@ -37,7 +41,24 @@ const PatientDashboard = () => {
             }
         };
 
+        const fetchCurrentAppointments = async () => {
+            if (typeof window.ethereum !== "undefined") {
+                const provider = new ethers.BrowserProvider(window.ethereum);
+                const signer = await provider.getSigner();
+                const contract = new ethers.Contract(contractAddress, UserLogin.abi, signer);
+
+                try {
+                    const appointments = await contract.getUserCurrentAppointments();
+                    console.log("Fetched Appointments:", appointments); // Log the fetched appointments
+                    setCurrentAppointments(appointments); // Update state with current appointments
+                } catch (error) {
+                    console.error("Error fetching current appointments:", error);
+                }
+            }
+        };
+
         fetchDoctors();
+        fetchCurrentAppointments();
     }, [department]);
 
     const handleDepartmentChange = (e) => {
@@ -48,6 +69,8 @@ const PatientDashboard = () => {
         setPatientAge("");
         setPatientGender("");
         setPatientContact("");
+        setPatientAppointmentDate("");
+        setPatientAppointmentTime("");
     };
 
     const handleDoctorChange = (e) => {
@@ -55,7 +78,7 @@ const PatientDashboard = () => {
     };
 
     const handleBooking = async () => {
-        if (!selectedDoctor || !patientName || !patientAge || !patientGender || !patientContact) {
+        if (!selectedDoctor || !patientName || !patientAge || !patientGender || !patientContact || !patientAppointmentDate || !patientAppointmentTime) {
             alert("Please fill in all fields to book an appointment.");
             return;
         }
@@ -68,7 +91,7 @@ const PatientDashboard = () => {
             const contract = new ethers.Contract(contractAddress, UserLogin.abi, signer);
 
             try {
-                const tx = await contract.bookAppointment(doctorAddress, patientName, patientAge, patientGender, patientContact);
+                const tx = await contract.bookAppointment(doctorAddress, patientName, patientAge, patientGender, patientContact, patientAppointmentDate, patientAppointmentTime);
                 await tx.wait();
                 alert("Appointment booked successfully!");
                 // Resetting fields after booking
@@ -77,10 +100,30 @@ const PatientDashboard = () => {
                 setPatientAge("");
                 setPatientGender("");
                 setPatientContact("");
-                setDoctors([]); // Clear doctors list
+                setPatientAppointmentDate("");
+                setPatientAppointmentTime("");
+                // Refresh current appointments
+                fetchCurrentAppointments(); // Refresh current appointments after booking
             } catch (error) {
                 console.error("Error booking appointment:", error);
                 alert("Error booking appointment. Please try again.");
+            }
+        }
+    };
+
+    // Function to fetch current appointments
+    const fetchCurrentAppointments = async () => {
+        if (typeof window.ethereum !== "undefined") {
+            const provider = new ethers.BrowserProvider(window.ethereum);
+            const signer = await provider.getSigner();
+            const contract = new ethers.Contract(contractAddress, UserLogin.abi, signer);
+
+            try {
+                const appointments = await contract.getUserCurrentAppointments();
+                console.log("Fetched Appointments:", appointments); // Log the fetched appointments
+                setCurrentAppointments(appointments); // Update state with current appointments
+            } catch (error) {
+                console.error("Error fetching current appointments:", error);
             }
         }
     };
@@ -126,7 +169,7 @@ const PatientDashboard = () => {
             </div>
             {selectedDoctor && (
                 <div className="mt-4">
-                    <h2>Selected Doctor: {selectedDoctor}</h2>
+                    <h2>Selected Doctor: Dr. {selectedDoctor}</h2>
                     <h3>Patient Details</h3>
                     <div className="mb-3">
                         <label>Name:</label>
@@ -168,10 +211,60 @@ const PatientDashboard = () => {
                             onChange={(e) => setPatientContact(e.target.value)} 
                         />
                     </div>
-                    <button className="btn btn-primary" onClick={handleBooking}>
-                        Book Appointment
-                    </button>
+                    <div className="mb-3">
+                        <label>Date of Appointment:</label>
+                        <input 
+                            type="text" 
+                            className="form-control" 
+                            value={patientAppointmentDate} 
+                            onChange={(e) => setPatientAppointmentDate(e.target.value)} 
+                        />
+                    </div>
+                    <div className="mb-3">
+                        <label>Time of Appointment:</label>
+                        <input 
+                            type="text" 
+                            className="form-control" 
+                            value={patientAppointmentTime} 
+                            onChange={(e) => setPatientAppointmentTime(e.target.value)} 
+                        />
+                    </div>
+                    <button className="btn btn-primary" onClick={handleBooking}>Book Appointment</button>
                 </div>
+            )}
+            <h2 className="mt-4">Current Appointments</h2>
+            {currentAppointments.length > 0 ? (
+                <table className="table">
+                    <thead>
+                        <tr>
+                            <th>Doctor</th>
+                            <th>Name</th>
+                            <th>Age</th>
+                            <th>Gender</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {currentAppointments.map((appointment, index) => {
+                            const [__, _, dname, name, age, gender,___,status, date, time] = appointment; // Destructure the appointment tuple
+                            return (
+                                <tr key={index}>
+                                    <td>{dname}</td>
+                                    <td>{name}</td>
+                                    <td>{age.toString()}</td>
+                                    <td>{gender}</td>
+                                    <td>{date.toString()}</td>
+                                    <td>{time.toString()}</td>
+                                    <td>{status}</td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            ) : (
+                <p>No current appointments found.</p>
             )}
         </div>
     );
