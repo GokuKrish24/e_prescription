@@ -5,6 +5,66 @@
 		"inputs": [
 			{
 				"internalType": "address",
+				"name": "_patient",
+				"type": "address"
+			},
+			{
+				"internalType": "string",
+				"name": "_diagnosis",
+				"type": "string"
+			},
+			{
+				"components": [
+					{
+						"internalType": "string",
+						"name": "name",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "dosage",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "frequency",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "instructions",
+						"type": "string"
+					}
+				],
+				"internalType": "struct PrescriptionManagement.Medication[]",
+				"name": "_medications",
+				"type": "tuple[]"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_date",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "_pname",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_dname",
+				"type": "string"
+			}
+		],
+		"name": "addPrescription",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
 				"name": "_doctor",
 				"type": "address"
 			},
@@ -61,6 +121,31 @@
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "prescriptionId",
+				"type": "uint256"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "doctor",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "patient",
+				"type": "address"
+			}
+		],
+		"name": "PrescriptionAdded",
+		"type": "event"
 	},
 	{
 		"inputs": [
@@ -441,6 +526,77 @@
 		"type": "function"
 	},
 	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_prescriptionId",
+				"type": "uint256"
+			}
+		],
+		"name": "getPrescription",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "doctor",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "patient",
+				"type": "address"
+			},
+			{
+				"internalType": "string",
+				"name": "diagnosis",
+				"type": "string"
+			},
+			{
+				"components": [
+					{
+						"internalType": "string",
+						"name": "name",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "dosage",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "frequency",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "instructions",
+						"type": "string"
+					}
+				],
+				"internalType": "struct PrescriptionManagement.Medication[]",
+				"name": "medications",
+				"type": "tuple[]"
+			},
+			{
+				"internalType": "uint256",
+				"name": "date",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "pname",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "dname",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
 		"inputs": [],
 		"name": "getUserCurrentAppointments",
 		"outputs": [
@@ -558,6 +714,63 @@
 				"internalType": "bool",
 				"name": "",
 				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "prescriptionCount",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "prescriptions",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "doctor",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "patient",
+				"type": "address"
+			},
+			{
+				"internalType": "string",
+				"name": "diagnosis",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "date",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "patientName",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "doctorName",
+				"type": "string"
 			}
 		],
 		"stateMutability": "view",

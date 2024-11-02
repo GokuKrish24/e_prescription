@@ -9,7 +9,7 @@ const DoctorDashboard = () => {
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [diagnosis, setDiagnosis] = useState("");
     const [medications, setMedications] = useState([{ name: "", dosage: "", frequency: "", instructions: "" }]);
-    const contractAddress = "0x7c6a545462BBf65297717Ba0D11c1E4a04c70948"; // Replace with your actual contract address
+    const contractAddress = "0xb36c7783a6c6C60bEF4C6A84D16af4Fb6A6AB1A5"; // Replace with your actual contract address
 
     useEffect(() => {
         const loadBlockchainData = async () => {
@@ -49,7 +49,7 @@ const DoctorDashboard = () => {
     const handleSubmitPrescription = async () => {
         if (!selectedAppointment) return; // Ensure an appointment is selected
 
-        const { user: patientAddr,doctorName: docName, patientName: patName, date: dateNow} = selectedAppointment; // Extract patient address from selected appointment
+        const { user: patientAddr } = selectedAppointment; // Extract patient address from selected appointment
 
         // Format medications for the smart contract
         const formattedMedications = medications.map(med => ({
@@ -65,7 +65,7 @@ const DoctorDashboard = () => {
             const contract = new ethers.Contract(contractAddress, UserLogin.abi, signer);
 
             // Assuming your contract has a method to add prescriptions
-            const tx = await contract.addPrescription(patientAddr, diagnosis, formattedMedications, dateNow, patName, docName);
+            const tx = await contract.addPrescription(patientAddr, diagnosis, formattedMedications);
             await tx.wait(); // Wait for the transaction to be mined
             alert("Prescription submitted successfully!");
 
