@@ -7,9 +7,10 @@ const DoctorDashboard = () => {
     const [currentAppointments, setCurrentAppointments] = useState([]);
     const [account, setAccount] = useState("");
     const [selectedAppointment, setSelectedAppointment] = useState(null);
+    const [selectedPrescription, setSelectedPrescription] = useState([]);
     const [diagnosis, setDiagnosis] = useState("");
     const [medications, setMedications] = useState([{ name: "", dosage: "", frequency: "", instructions: "" }]);
-    const contractAddress = "0x7c6a545462BBf65297717Ba0D11c1E4a04c70948"; // Replace with your actual contract address
+    const contractAddress = "0xb3FcB508Eb58D82EF8799d8FA7D64bb80127b2A8"; // Replace with your actual contract address
 
     useEffect(() => {
         const loadBlockchainData = async () => {
@@ -21,7 +22,6 @@ const DoctorDashboard = () => {
 
                 try {
                     const appointments = await contract.getDoctorCurrentAppointments();
-                    console.log("Fetched Appointments:", appointments);
                     setCurrentAppointments(appointments);
                 } catch (error) {
                     console.error("Error fetching current appointments:", error);
@@ -36,6 +36,19 @@ const DoctorDashboard = () => {
         setSelectedAppointment(appointment);
     };
 
+    const handleViewPrescription = async (patientAddr) => {
+        try {
+            const provider = new ethers.BrowserProvider(window.ethereum);
+            const signer = await provider.getSigner();
+            const contract = new ethers.Contract(contractAddress, UserLogin.abi, signer);
+
+            const prescriptions = await contract.getPrescriptionsByPatient(patientAddr);
+            setSelectedPrescription(prescriptions);
+        } catch (error) {
+            console.error("Error fetching prescriptions:", error);
+        }
+    };
+
     const handleAddMedication = () => {
         setMedications([...medications, { name: "", dosage: "", frequency: "", instructions: "" }]);
     };
@@ -47,11 +60,10 @@ const DoctorDashboard = () => {
     };
 
     const handleSubmitPrescription = async () => {
-        if (!selectedAppointment) return; // Ensure an appointment is selected
+        if (!selectedAppointment) return;
 
-        const { user: patientAddr,doctorName: docName, patientName: patName, date: dateNow} = selectedAppointment; // Extract patient address from selected appointment
+        const { user: patientAddr, doctorName: docName, patientName: patName, date: dateNow } = selectedAppointment;
 
-        // Format medications for the smart contract
         const formattedMedications = medications.map(med => ({
             name: med.name,
             dosage: med.dosage,
@@ -64,12 +76,10 @@ const DoctorDashboard = () => {
             const signer = await provider.getSigner();
             const contract = new ethers.Contract(contractAddress, UserLogin.abi, signer);
 
-            // Assuming your contract has a method to add prescriptions
             const tx = await contract.addPrescription(patientAddr, diagnosis, formattedMedications, dateNow, patName, docName);
-            await tx.wait(); // Wait for the transaction to be mined
+            await tx.wait();
             alert("Prescription submitted successfully!");
 
-            // Reset state after submission
             setDiagnosis("");
             setMedications([{ name: "", dosage: "", frequency: "", instructions: "" }]);
             setSelectedAppointment(null);
@@ -118,10 +128,16 @@ const DoctorDashboard = () => {
                                     <td>{status}</td>
                                     <td>
                                         <button
-                                            className="btn btn-primary btn-sm"
+                                            className="btn btn-primary btn-sm me-2"
                                             onClick={() => handlePrescribe(appointment)}
                                         >
                                             Prescribe
+                                        </button>
+                                        <button
+                                            className="btn btn-secondary btn-sm"
+                                            onClick={() => handleViewPrescription(patientAddr)}
+                                        >
+                                            View Prescription
                                         </button>
                                     </td>
                                 </tr>
@@ -134,6 +150,7 @@ const DoctorDashboard = () => {
             )}
 
             {selectedAppointment && (
+                // Prescribe Modal
                 <div className="modal show d-block" role="dialog" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
                     <div className="modal-dialog">
                         <div className="modal-content">
@@ -204,6 +221,52 @@ const DoctorDashboard = () => {
                                 </button>
                                 <button type="button" className="btn btn-success" onClick={handleSubmitPrescription}>
                                     Submit
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* View Prescription Modal */}
+            {selectedPrescription.length > 0 && (
+                <div className="modal show d-block" role="dialog" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+                    <div className="modal-dialog">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">Prescription History</h5>
+                                <button
+                                    type="button"
+                                    className="btn-close"
+                                    onClick={() => setSelectedPrescription([])}
+                                ></button>
+                            </div>
+                            <div className="modal-body">
+                                {selectedPrescription.map((prescription, index) => (
+                                    <div key={index} className="mb-3 border p-2 rounded">
+                                        
+                                        <p><strong>Diagnosis:</strong> {prescription.diagnosis}</p>
+                                        <p><strong>Date:</strong> {`${prescription.date.toString().slice(0, 4)}-${prescription.date.toString().slice(4, 6)}-${prescription.date.toString().slice(6)}`}</p>
+                                        <h6>Medications:</h6>
+                                        {prescription.medications.map((med, idx) => (
+                                            <div key={idx} className="p-1">
+                                                <p>Name: {med.name}</p>
+                                                <p>Dosage: {med.dosage}</p>
+                                                <p>Frequency: {med.frequency}</p>
+                                                <p>Instructions: {med.instructions}</p>
+                                                <hr />
+                                            </div>
+                                        ))}
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="modal-footer">
+                                <button
+                                    type="button"
+                                    className="btn btn-danger"
+                                    onClick={() => setSelectedPrescription([])}
+                                >
+                                    Close
                                 </button>
                             </div>
                         </div>

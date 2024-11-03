@@ -22,7 +22,7 @@ const PatientDashboard = () => {
     // Current appointments state
     const [currentAppointments, setCurrentAppointments] = useState([]);
 
-    const contractAddress = "0x7c6a545462BBf65297717Ba0D11c1E4a04c70948"; // Replace with your actual contract address
+    const contractAddress = "0xb3FcB508Eb58D82EF8799d8FA7D64bb80127b2A8"; // Replace with your actual contract address
 
     // Fetch doctors and current appointments whenever the selected department changes
     useEffect(() => {
