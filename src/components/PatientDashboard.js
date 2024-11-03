@@ -22,7 +22,7 @@ const PatientDashboard = () => {
     // Current appointments state
     const [currentAppointments, setCurrentAppointments] = useState([]);
 
-    const contractAddress = "0xb3FcB508Eb58D82EF8799d8FA7D64bb80127b2A8"; // Replace with your actual contract address
+    const contractAddress = "0x355E8a72d0F908849095CdbDA8792517Da32C187"; // Replace with your actual contract address
 
     // Fetch doctors and current appointments whenever the selected department changes
     useEffect(() => {
@@ -277,7 +277,7 @@ const PatientDashboard = () => {
                     </thead>
                     <tbody>
                         {currentAppointments.map((appointment, index) => {
-                            const [__, _, dname, name, age, gender, ___, status, date, time] = appointment;
+                            const [AI,__, _, dname, name, age, gender, ___, status, date, time] = appointment;
                             
                             // Format date to YYYY-MM-DD
                             const formattedDate = `${date.toString().slice(0, 4)}-${date.toString().slice(4, 6)}-${date.toString().slice(6)}`;

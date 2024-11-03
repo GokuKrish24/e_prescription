@@ -1,10 +1,9 @@
-// // src/components/Login.js
 // import React, { useState } from 'react';
 // import Web3 from 'web3';
 // import '../styles/styles.css';
 // import UserLoginArtifact from '../contracts/UserLogin.json'; // Updated path
 
-// const contractAddress = "0xF9FBE6180B84715987d101de6D07128feC7b1d49"; // Replace with your actual contract address
+// const contractAddress = "0x355E8a72d0F908849095CdbDA8792517Da32C187"; // Replace with your actual contract address
 
 // const Login = ({ web3, setContract, setAccount, setIsLoggedIn, setUserRole }) => {
 //     const [username, setUsername] = useState('');
@@ -55,10 +54,10 @@
 //     };
 
 //     return (
-//         <div className="d-flex justify-content-center align-items-center vh-100">
-//             <div className="card p-4 login-card" style={{ maxWidth: '400px', width: '100%' }}>
-//                 <h1 className="text-center">User Login</h1>
-//                 {errorMessage && <div className="alert alert-danger text-center">{errorMessage}</div>}
+//         <div className="login-container d-flex justify-content-center align-items-center vh-100">
+//             <div className="card p-4 login-card" style={styles.card}>
+//                 <h1 className="text-center" style={styles.heading}>User Login</h1>
+//                 {errorMessage && <div className="alert alert-danger text-center" style={styles.errorMessage}>{errorMessage}</div>}
 //                 <div className="form-group mb-3">
 //                     <input
 //                         type="text"
@@ -92,27 +91,53 @@
 //                         <option value="pharmacy">Pharmacy</option>
 //                     </select>
 //                 </div>
-//                 <button className="btn btn-primary btn-block mb-2" onClick={handleLogin}>Login</button>
-//                 {/* Show register button only if role is patient */}
+//                 <button className="btn btn-primary btn-block mb-2" onClick={handleLogin} style={styles.loginButton}>Login</button>
 //                 {role === 'patient' && (
-//                     <button className="btn btn-secondary btn-block" onClick={handleRegister}>Register</button>
+//                     <button className="btn btn-secondary btn-block" onClick={handleRegister} style={styles.registerButton}>Register</button>
 //                 )}
 //             </div>
 //         </div>
 //     );
 // };
 
+// const styles = {
+//     card: {
+//         maxWidth: '400px',
+//         width: '100%',
+//         borderRadius: '10px',
+//         boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.2)',
+//         backgroundColor: '#ffffff',
+//     },
+//     heading: {
+//         color: '#007bff',
+//         fontWeight: 'bold',
+//     },
+//     errorMessage: {
+//         fontWeight: 'bold',
+//         color: '#d9534f',
+//     },
+//     loginButton: {
+//         backgroundColor: '#007bff',
+//         border: 'none',
+//         transition: 'background-color 0.3s',
+//     },
+//     registerButton: {
+//         backgroundColor: '#6c757d',
+//         border: 'none',
+//         transition: 'background-color 0.3s',
+//     },
+// };
+
 // export default Login;
 
-// src/components/Login.js
 import React, { useState } from 'react';
 import Web3 from 'web3';
 import '../styles/styles.css';
-import UserLoginArtifact from '../contracts/UserLogin.json'; // Updated path
+import UserLoginArtifact from '../contracts/UserLogin.json';
 
-const contractAddress = "0xb3FcB508Eb58D82EF8799d8FA7D64bb80127b2A8"; // Replace with your actual contract address
+const contractAddress = "0x355E8a72d0F908849095CdbDA8792517Da32C187";
 
-const Login = ({ web3, setContract, setAccount, setIsLoggedIn, setUserRole }) => {
+const Login = ({ web3, setContract, setAccount, setIsLoggedIn, setUserRole, onLogout }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('');
@@ -128,7 +153,12 @@ const Login = ({ web3, setContract, setAccount, setIsLoggedIn, setUserRole }) =>
                 if (result) {
                     alert('Login successful!');
                     setIsLoggedIn(true);
-                    setUserRole(role.toLowerCase()); // Set the role for routing (always lowercase)
+                    setUserRole(role.toLowerCase());
+                    
+                    // Save user credentials to localStorage
+                    localStorage.setItem('username', username);
+                    localStorage.setItem('account', accounts[0]);
+                    localStorage.setItem('role', role.toLowerCase());
                 } else {
                     setErrorMessage('Login failed. Please check your credentials.');
                 }
@@ -202,6 +232,11 @@ const Login = ({ web3, setContract, setAccount, setIsLoggedIn, setUserRole }) =>
                 {role === 'patient' && (
                     <button className="btn btn-secondary btn-block" onClick={handleRegister} style={styles.registerButton}>Register</button>
                 )}
+                {/* {setIsLoggedIn && (
+                    <button className="btn btn-danger btn-block" onClick={onLogout} style={styles.logoutButton}>
+                        Logout
+                    </button>
+                )} */}
             </div>
         </div>
     );
@@ -233,6 +268,13 @@ const styles = {
         border: 'none',
         transition: 'background-color 0.3s',
     },
+    logoutButton: {
+        backgroundColor: '#dc3545',
+        border: 'none',
+        transition: 'background-color 0.3s',
+    },
 };
 
 export default Login;
+
+

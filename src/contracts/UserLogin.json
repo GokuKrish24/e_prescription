@@ -108,12 +108,17 @@
 		"inputs": [
 			{
 				"internalType": "address",
+				"name": "_user",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
 				"name": "_doctor",
 				"type": "address"
 			},
 			{
 				"internalType": "uint256",
-				"name": "_appointmentIndex",
+				"name": "_appointmentId",
 				"type": "uint256"
 			}
 		],
@@ -212,6 +217,19 @@
 		"type": "function"
 	},
 	{
+		"inputs": [],
+		"name": "appointmentCount",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
 		"inputs": [
 			{
 				"internalType": "address",
@@ -226,6 +244,11 @@
 		],
 		"name": "doctorCurrentAppointments",
 		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "appointmentId",
+				"type": "uint256"
+			},
 			{
 				"internalType": "address",
 				"name": "user",
@@ -296,6 +319,11 @@
 		"name": "doctorPastAppointments",
 		"outputs": [
 			{
+				"internalType": "uint256",
+				"name": "appointmentId",
+				"type": "uint256"
+			},
+			{
 				"internalType": "address",
 				"name": "user",
 				"type": "address"
@@ -355,6 +383,11 @@
 		"outputs": [
 			{
 				"components": [
+					{
+						"internalType": "uint256",
+						"name": "appointmentId",
+						"type": "uint256"
+					},
 					{
 						"internalType": "address",
 						"name": "user",
@@ -656,6 +689,11 @@
 			{
 				"components": [
 					{
+						"internalType": "uint256",
+						"name": "appointmentId",
+						"type": "uint256"
+					},
+					{
 						"internalType": "address",
 						"name": "user",
 						"type": "address"
@@ -845,6 +883,11 @@
 		"name": "userCurrentAppointments",
 		"outputs": [
 			{
+				"internalType": "uint256",
+				"name": "appointmentId",
+				"type": "uint256"
+			},
+			{
 				"internalType": "address",
 				"name": "user",
 				"type": "address"
@@ -913,6 +956,11 @@
 		],
 		"name": "userPastAppointments",
 		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "appointmentId",
+				"type": "uint256"
+			},
 			{
 				"internalType": "address",
 				"name": "user",

@@ -10,7 +10,7 @@ const DoctorDashboard = () => {
     const [selectedPrescription, setSelectedPrescription] = useState([]);
     const [diagnosis, setDiagnosis] = useState("");
     const [medications, setMedications] = useState([{ name: "", dosage: "", frequency: "", instructions: "" }]);
-    const contractAddress = "0xb3FcB508Eb58D82EF8799d8FA7D64bb80127b2A8"; // Replace with your actual contract address
+    const contractAddress = "0x355E8a72d0F908849095CdbDA8792517Da32C187"; // Replace with your actual contract address
 
     useEffect(() => {
         const loadBlockchainData = async () => {
@@ -59,34 +59,46 @@ const DoctorDashboard = () => {
         setMedications(newMedications);
     };
 
+
     const handleSubmitPrescription = async () => {
         if (!selectedAppointment) return;
-
-        const { user: patientAddr, doctorName: docName, patientName: patName, date: dateNow } = selectedAppointment;
-
+    
+        const { appointmentId: Ai, user: patientAddr, doctor: docAddr, doctorName: docName, patientName: patName, date: dateNow } = selectedAppointment;
+    
         const formattedMedications = medications.map(med => ({
             name: med.name,
             dosage: med.dosage,
             frequency: med.frequency,
             instructions: med.instructions,
         }));
-
+    
         try {
             const provider = new ethers.BrowserProvider(window.ethereum);
             const signer = await provider.getSigner();
             const contract = new ethers.Contract(contractAddress, UserLogin.abi, signer);
-
-            const tx = await contract.addPrescription(patientAddr, diagnosis, formattedMedications, dateNow, patName, docName);
-            await tx.wait();
+    
+            // Submit the prescription
+            const tx1 = await contract.addPrescription(patientAddr, diagnosis, formattedMedications, dateNow, patName, docName);
+            await tx1.wait();
             alert("Prescription submitted successfully!");
-
+    
+            // Complete the appointment
+            const tx2 = await contract.completeAppointment(patientAddr, docAddr, Ai); // Make sure the parameters are correct
+            await tx2.wait();
+            alert("Appointment completed successfully!");
+    
+            // Reset state after submission
             setDiagnosis("");
             setMedications([{ name: "", dosage: "", frequency: "", instructions: "" }]);
             setSelectedAppointment(null);
+    
+            // Refresh the page to load updated data
+            window.location.reload();
         } catch (error) {
             console.error("Error submitting prescription:", error);
         }
     };
+        
 
     return (
         <div className="container mt-4">
@@ -109,7 +121,7 @@ const DoctorDashboard = () => {
                     </thead>
                     <tbody>
                         {currentAppointments.map((appointment, index) => {
-                            const [patientAddr, doctorAddr, doctorName, name, age, gender, contact, status, date, time] = appointment;
+                            const [_,patientAddr, doctorAddr, doctorName, name, age, gender, contact, status, date, time] = appointment;
 
                             // Format date to YYYY-MM-DD
                             const formattedDate = `${date.toString().slice(0, 4)}-${date.toString().slice(4, 6)}-${date.toString().slice(6)}`;
@@ -244,7 +256,8 @@ const DoctorDashboard = () => {
                             <div className="modal-body">
                                 {selectedPrescription.map((prescription, index) => (
                                     <div key={index} className="mb-3 border p-2 rounded">
-                                        
+                                        <p><strong>Patient_Name:</strong> {prescription.patientName}</p>
+                                        <p><strong>Doctor: Dr.</strong> {prescription.doctorName}</p>
                                         <p><strong>Diagnosis:</strong> {prescription.diagnosis}</p>
                                         <p><strong>Date:</strong> {`${prescription.date.toString().slice(0, 4)}-${prescription.date.toString().slice(4, 6)}-${prescription.date.toString().slice(6)}`}</p>
                                         <h6>Medications:</h6>
