@@ -15,6 +15,8 @@ const PatientDashboard = () => {
     const [patientContact, setPatientContact] = useState("");
     const [patientAppointmentDate, setPatientAppointmentDate] = useState("");
     const [patientAppointmentTime, setPatientAppointmentTime] = useState("");
+    const [prescriptions, setPrescriptions] = useState([]);
+    const [showPrescriptions, setShowPrescriptions] = useState(false);
 
     // Predefined list of departments
     const departments = ["Neurology", "Dermatology", "Cardiology", "Orthopedic"];
@@ -76,6 +78,20 @@ const PatientDashboard = () => {
 
     const handleDoctorChange = (e) => {
         setSelectedDoctor(e.target.value); // Update the selected doctor
+    };
+
+    const handleViewPrescriptions = async () => {
+        try {
+            const provider = new ethers.BrowserProvider(window.ethereum);
+            const signer = await provider.getSigner();
+            const contract = new ethers.Contract(contractAddress, UserLogin.abi, signer);
+
+            const prescriptionsData = await contract.getPrescriptionsByPatient(signer.getAddress()); // Fetch prescriptions for the patient
+            setPrescriptions(prescriptionsData);
+            setShowPrescriptions(true); // Show the modal with prescriptions
+        } catch (error) {
+            console.error("Error fetching prescriptions:", error);
+        }
     };
 
     const handleBooking = async () => {
@@ -147,6 +163,60 @@ const PatientDashboard = () => {
 
     return (
         <div style={styles.container}>
+            <button className="btn btn-info" onClick={handleViewPrescriptions}>
+                View Prescriptions
+            </button>
+
+            {/* View Prescription Modal */}
+            {showPrescriptions && (
+                <div className="modal show d-block" role="dialog" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+                    <div className="modal-dialog">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">Prescription History</h5>
+                                <button
+                                    type="button"
+                                    className="btn-close"
+                                    onClick={() => setShowPrescriptions(false)}
+                                ></button>
+                            </div>
+                            <div className="modal-body">
+                                {prescriptions.length > 0 ? (
+                                    prescriptions.map((prescription, index) => (
+                                        <div key={index} className="mb-3 border p-2 rounded">
+                                            <p><strong>Doctor:</strong> Dr. {prescription.doctorName}</p>
+                                            <p><strong>Patient:</strong>{prescription.patientName}</p>                                            
+                                            <p><strong>Diagnosis:</strong> {prescription.diagnosis}</p>
+                                            <p><strong>Date:</strong> {`${prescription.date.toString().slice(0, 4)}-${prescription.date.toString().slice(4, 6)}-${prescription.date.toString().slice(6)}`}</p>
+                                            <h6>Medications:</h6>
+                                            {prescription.medications.map((med, idx) => (
+                                                <div key={idx} className="p-1">
+                                                    <p>Name: {med.name}</p>
+                                                    <p>Dosage: {med.dosage}</p>
+                                                    <p>Frequency: {med.frequency}</p>
+                                                    <p>Instructions: {med.instructions}</p>
+                                                    <hr />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p>No prescriptions found.</p>
+                                )}
+                            </div>
+                            <div className="modal-footer">
+                                <button
+                                    type="button"
+                                    className="btn btn-danger"
+                                    onClick={() => setShowPrescriptions(false)}
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
             <h1 style={styles.header}>Book an Appointment</h1>
 
             {/* Department Selection */}
