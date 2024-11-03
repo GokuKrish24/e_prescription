@@ -10,7 +10,7 @@ const DoctorDashboard = () => {
     const [selectedPrescription, setSelectedPrescription] = useState([]);
     const [diagnosis, setDiagnosis] = useState("");
     const [medications, setMedications] = useState([{ name: "", dosage: "", frequency: "", instructions: "" }]);
-    const contractAddress = "0x355E8a72d0F908849095CdbDA8792517Da32C187"; // Replace with your actual contract address
+    const contractAddress = "0x244d70e8c5C4F62d9AD7fE1E193d3059C2904216"; // Replace with your actual contract address
 
     useEffect(() => {
         const loadBlockchainData = async () => {

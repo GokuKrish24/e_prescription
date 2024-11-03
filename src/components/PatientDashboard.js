@@ -23,8 +23,9 @@ const PatientDashboard = () => {
     
     // Current appointments state
     const [currentAppointments, setCurrentAppointments] = useState([]);
+    const [pastAppointments, setPastAppointments] = useState([]);
 
-    const contractAddress = "0x355E8a72d0F908849095CdbDA8792517Da32C187"; // Replace with your actual contract address
+    const contractAddress = "0x244d70e8c5C4F62d9AD7fE1E193d3059C2904216"; // Replace with your actual contract address
 
     // Fetch doctors and current appointments whenever the selected department changes
     useEffect(() => {
@@ -60,8 +61,25 @@ const PatientDashboard = () => {
             }
         };
 
+        const fetchpastAppointments = async () => {
+            if (typeof window.ethereum !== "undefined") {
+                const provider = new ethers.BrowserProvider(window.ethereum);
+                const signer = await provider.getSigner();
+                const contract = new ethers.Contract(contractAddress, UserLogin.abi, signer);
+
+                try {
+                    const appointments = await contract.getUserPastAppointments();
+                    console.log("Fetched Appointments:", appointments); // Log the fetched appointments
+                    setPastAppointments(appointments); // Update state with current appointments
+                } catch (error) {
+                    console.error("Error fetching past appointments:", error);
+                }
+            }
+        };
+
         fetchDoctors();
         fetchCurrentAppointments();
+        fetchpastAppointments();
     }, [department]);
 
     const handleDepartmentChange = (e) => {
@@ -155,6 +173,23 @@ const PatientDashboard = () => {
                 const appointments = await contract.getUserCurrentAppointments();
                 console.log("Fetched Appointments:", appointments); // Log the fetched appointments
                 setCurrentAppointments(appointments); // Update state with current appointments
+            } catch (error) {
+                console.error("Error fetching current appointments:", error);
+            }
+        }
+    };
+
+    // Function to fetch current appointments
+    const fetchPastAppointments = async () => {
+        if (typeof window.ethereum !== "undefined") {
+            const provider = new ethers.BrowserProvider(window.ethereum);
+            const signer = await provider.getSigner();
+            const contract = new ethers.Contract(contractAddress, UserLogin.abi, signer);
+
+            try {
+                const appointments = await contract.getUserPastAppointments();
+                console.log("Fetched Appointments:", appointments); // Log the fetched appointments
+                setPastAppointments(appointments); // Update state with current appointments
             } catch (error) {
                 console.error("Error fetching current appointments:", error);
             }
@@ -373,6 +408,51 @@ const PatientDashboard = () => {
                 <p>No current appointments found.</p>
             )}
 
+            
+            {/* Current Appointments Table */}
+            <h2 style={styles.subHeader}>Past Appointments</h2>
+            {pastAppointments.length > 0 ? (
+                <table style={styles.appointmentTable}>
+                    <thead style={styles.tableHeader}>
+                        <tr>
+                            <th>Doctor</th>
+                            <th>Name</th>
+                            <th>Age</th>
+                            <th>Gender</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {pastAppointments.map((appointment, index) => {
+                            const [AI,__, _, dname, name, age, gender, ___, status, date, time] = appointment;
+                            
+                            // Format date to YYYY-MM-DD
+                            const formattedDate = `${date.toString().slice(0, 4)}-${date.toString().slice(4, 6)}-${date.toString().slice(6)}`;
+                            
+                            // Format time to HH:mm
+                            const formattedTime = time.toString().padStart(4, '0').replace(/(\d{2})(\d{2})/, '$1:$2');
+
+                            return (
+                                <tr key={index} style={index % 2 === 0 ? styles.evenRow : styles.oddRow}>
+                                    <td style={styles.cell}>{dname}</td>
+                                    <td style={styles.cell}>{name}</td>
+                                    <td style={styles.cell}>{age.toString()}</td>
+                                    <td style={styles.cell}>{gender}</td>
+                                    <td style={styles.cell}>{formattedDate}</td>
+                                    <td style={styles.cell}>{formattedTime}</td>
+                                    <td style={styles.statusCellp}>{status}</td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            ) : (
+                <p>No past appointments found.</p>
+            )}
+
+
         </div>
     );
 };
@@ -424,6 +504,13 @@ const styles = {
     icon: {
         color: '#007bff',
         marginRight: '8px',
+    },
+    statusCellp: {
+        padding: '12px 8px',
+        textAlign: 'center',
+        borderBottom: '1px solid #e0e0e0',
+        color: 'red', // Success green for completed appointments
+        fontWeight: 'bold',
     },
     list: {
         listStyle: 'none',
