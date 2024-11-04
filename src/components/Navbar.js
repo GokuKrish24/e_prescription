@@ -35,9 +35,6 @@ const Navbar = ({ account, onLogout }) => {
                         </li>
                     </ul>
                 </div>
-                <span style={styles.accountText}>
-                    <FaUserCircle style={styles.icon} /> Account: {account}
-                </span>
             </div>
         </nav>
     );

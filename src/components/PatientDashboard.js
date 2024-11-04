@@ -25,7 +25,7 @@ const PatientDashboard = () => {
     const [currentAppointments, setCurrentAppointments] = useState([]);
     const [pastAppointments, setPastAppointments] = useState([]);
 
-    const contractAddress = "0x244d70e8c5C4F62d9AD7fE1E193d3059C2904216"; // Replace with your actual contract address
+    const contractAddress = "0x267b003DE19d953c3b3eA413CdF4852f86A9976f"; // Replace with your actual contract address
 
     // Fetch doctors and current appointments whenever the selected department changes
     useEffect(() => {
@@ -153,6 +153,7 @@ const PatientDashboard = () => {
                 setPatientAppointmentTime("");
                 // Refresh current appointments
                 fetchCurrentAppointments(); // Refresh current appointments after booking
+                fetchPastAppointments();
             } catch (error) {
                 console.error("Error booking appointment:", error);
                 alert("Error booking appointment. Please try again.");
@@ -409,7 +410,7 @@ const PatientDashboard = () => {
             )}
 
             
-            {/* Current Appointments Table */}
+            {/* Past Appointments Table */}
             <h2 style={styles.subHeader}>Past Appointments</h2>
             {pastAppointments.length > 0 ? (
                 <table style={styles.appointmentTable}>

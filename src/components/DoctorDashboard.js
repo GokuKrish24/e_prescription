@@ -10,7 +10,8 @@ const DoctorDashboard = () => {
     const [selectedPrescription, setSelectedPrescription] = useState([]);
     const [diagnosis, setDiagnosis] = useState("");
     const [medications, setMedications] = useState([{ name: "", dosage: "", frequency: "", instructions: "" }]);
-    const contractAddress = "0x244d70e8c5C4F62d9AD7fE1E193d3059C2904216"; // Replace with your actual contract address
+    const [pastAppointments, setPastAppointments] = useState([]);
+    const contractAddress = "0x267b003DE19d953c3b3eA413CdF4852f86A9976f"; // Replace with your actual contract address
 
     useEffect(() => {
         const loadBlockchainData = async () => {
@@ -29,7 +30,24 @@ const DoctorDashboard = () => {
             }
         };
 
+        const fetchpastAppointments = async () => {
+            if (typeof window.ethereum !== "undefined") {
+                const provider = new ethers.BrowserProvider(window.ethereum);
+                const signer = await provider.getSigner();
+                const contract = new ethers.Contract(contractAddress, UserLogin.abi, signer);
+
+                try {
+                    const appointments = await contract.getDoctorPastAppointments();
+                    console.log("Fetched Appointments:", appointments); // Log the fetched appointments
+                    setPastAppointments(appointments); // Update state with current appointments
+                } catch (error) {
+                    console.error("Error fetching past appointments:", error);
+                }
+            }
+        };
+
         loadBlockchainData();
+        fetchpastAppointments();
     }, []);
 
     const handlePrescribe = (appointment) => {
@@ -98,16 +116,31 @@ const DoctorDashboard = () => {
             console.error("Error submitting prescription:", error);
         }
     };
-        
+    
+    const fetchPastAppointments = async () => {
+        if (typeof window.ethereum !== "undefined") {
+            const provider = new ethers.BrowserProvider(window.ethereum);
+            const signer = await provider.getSigner();
+            const contract = new ethers.Contract(contractAddress, UserLogin.abi, signer);
+
+            try {
+                const appointments = await contract.getDoctorPastAppointments();
+                console.log("Fetched Appointments:", appointments); // Log the fetched appointments
+                setPastAppointments(appointments); // Update state with current appointments
+            } catch (error) {
+                console.error("Error fetching current appointments:", error);
+            }
+        }
+    };
 
     return (
         <div className="container mt-4">
             <h1 className="text-center">Doctor Dashboard</h1>
             <p className="text-muted">Logged in as: {account}</p>
-            <h2 className="mt-4">Current Appointments</h2>
+            <h2 style={styles.subHeader}>Current Appointments</h2>
             {currentAppointments.length > 0 ? (
-                <table className="table table-striped table-bordered">
-                    <thead className="thead-dark">
+                <table style={styles.appointmentTable}>
+                    <thead style={styles.tableHeader}>
                         <tr>
                             <th>Patient Name</th>
                             <th>Age</th>
@@ -130,15 +163,15 @@ const DoctorDashboard = () => {
                             const formattedTime = time.toString().padStart(4, '0').replace(/(\d{2})(\d{2})/, '$1:$2');
 
                             return (
-                                <tr key={index}>
-                                    <td>{name}</td>
-                                    <td>{age.toString()}</td>
-                                    <td>{gender}</td>
-                                    <td>{contact.toString()}</td>
-                                    <td>{formattedDate}</td>
-                                    <td>{formattedTime}</td>
-                                    <td>{status}</td>
-                                    <td>
+                                <tr key={index} style={index % 2 === 0 ? styles.evenRow : styles.oddRow}>
+                                    <td style={styles.cell}>{name}</td>
+                                    <td style={styles.cell}>{age.toString()}</td>
+                                    <td style={styles.cell}>{gender}</td>
+                                    <td style={styles.cell}>{contact.toString()}</td>
+                                    <td style={styles.cell}>{formattedDate}</td>
+                                    <td style={styles.cell}>{formattedTime}</td>
+                                    <td style={styles.statusCell}>{status}</td>
+                                    <td style={styles.cell}>
                                         <button
                                             className="btn btn-primary btn-sm me-2"
                                             onClick={() => handlePrescribe(appointment)}
@@ -260,7 +293,7 @@ const DoctorDashboard = () => {
                                         <p><strong>Doctor: Dr.</strong> {prescription.doctorName}</p>
                                         <p><strong>Diagnosis:</strong> {prescription.diagnosis}</p>
                                         <p><strong>Date:</strong> {`${prescription.date.toString().slice(0, 4)}-${prescription.date.toString().slice(4, 6)}-${prescription.date.toString().slice(6)}`}</p>
-                                        <h6>Medications:</h6>
+                                        <h6><strong>Medications:</strong></h6>
                                         {prescription.medications.map((med, idx) => (
                                             <div key={idx} className="p-1">
                                                 <p>Name: {med.name}</p>
@@ -286,8 +319,171 @@ const DoctorDashboard = () => {
                     </div>
                 </div>
             )}
+            {/* Past Appointments Table */}
+            <h2 style={styles.subHeader}>Past Appointments</h2>
+            {pastAppointments.length > 0 ? (
+                <table style={styles.appointmentTable}>
+                    <thead style={styles.tableHeader}>
+                        <tr>
+                            <th>Patient Name</th>
+                            <th>Age</th>
+                            <th>Gender</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {pastAppointments.map((appointment, index) => {
+                            const [_,patientAddr, doctorAddr, doctorName, name, age, gender, contact, status, date, time] = appointment;
+                            
+                            // Format date to YYYY-MM-DD
+                            const formattedDate = `${date.toString().slice(0, 4)}-${date.toString().slice(4, 6)}-${date.toString().slice(6)}`;
+                            
+                            // Format time to HH:mm
+                            const formattedTime = time.toString().padStart(4, '0').replace(/(\d{2})(\d{2})/, '$1:$2');
+
+                            return (
+                                <tr key={index} style={index % 2 === 0 ? styles.evenRow : styles.oddRow}>
+                                    <td style={styles.cell}>{name}</td>
+                                    <td style={styles.cell}>{age.toString()}</td>
+                                    <td style={styles.cell}>{gender}</td>
+                                    <td style={styles.cell}>{formattedDate}</td>
+                                    <td style={styles.cell}>{formattedTime}</td>
+                                    <td style={styles.statusCellp}>Inactive</td>
+                                    <td style={styles.cell}>
+                                        <button
+                                            className="btn btn-secondary btn-sm"
+                                            onClick={() => handleViewPrescription(patientAddr)}
+                                        >
+                                            View Prescription
+                                        </button>
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            ) : (
+                <p>No past appointments found.</p>
+            )}
         </div>
     );
 };
 
+
+const styles = {
+    container: {
+        padding: '20px',
+        maxWidth: '800px',
+        margin: '0 auto',
+        fontFamily: 'Arial, sans-serif',
+    },
+    header: {
+        color: '#007bff',
+        fontSize: '2rem',
+        textAlign: 'center',
+    },
+    subHeader: {
+        fontSize: '1.5rem',
+        color: '#007bff',
+        marginBottom: '10px',
+    },
+    inputGroup: {
+        marginBottom: '1rem',
+    },
+    input: {
+        width: '100%',
+        padding: '8px',
+        borderRadius: '5px',
+        border: '1px solid #ced4da',
+    },
+    select: {
+        width: '100%',
+        padding: '8px',
+        borderRadius: '5px',
+        border: '1px solid #ced4da',
+    },
+    button: {
+        backgroundColor: '#28a745',
+        color: '#fff',
+        padding: '10px 20px',
+        border: 'none',
+        borderRadius: '5px',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '8px',
+    },
+    icon: {
+        color: '#007bff',
+        marginRight: '8px',
+    },
+    statusCellp: {
+        padding: '12px 8px',
+        textAlign: 'center',
+        borderBottom: '1px solid #e0e0e0',
+        color: 'red', // Success green for completed appointments
+        fontWeight: 'bold',
+    },
+    list: {
+        listStyle: 'none',
+        padding: 0,
+    },
+    listItem: {
+        backgroundColor: '#f8f9fa',
+        padding: '15px',
+        borderRadius: '8px',
+        marginBottom: '10px',
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+    },
+    card: {
+        backgroundColor: '#f8f9fa',
+        padding: '20px',
+        borderRadius: '8px',
+        boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
+        marginBottom: '20px',
+    },
+    table: {
+        width: '100%',
+        borderCollapse: 'collapse',
+        marginTop: '20px',
+    },
+    appointmentTable: {
+        width: '100%',
+        borderCollapse: 'collapse',
+        marginTop: '20px',
+        boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
+        borderRadius: '8px',
+        overflow: 'hidden',
+    },
+    tableHeader: {
+        textAlign: 'center',
+        backgroundColor: '#007bff',
+        color: '#fff',
+        textTransform: 'uppercase',
+        fontSize: '0.9rem',
+        letterSpacing: '1px',
+    },
+    cell: {
+        padding: '12px 8px',
+        textAlign: 'center',
+        borderBottom: '1px solid #e0e0e0',
+    },
+    statusCell: {
+        padding: '12px 8px',
+        textAlign: 'center',
+        borderBottom: '1px solid #e0e0e0',
+        color: '#28a745', // Success green for completed appointments
+        fontWeight: 'bold',
+    },
+    evenRow: {
+        backgroundColor: '#f9f9f9',
+    },
+    oddRow: {
+        backgroundColor: '#fff',
+    }
+};
 export default DoctorDashboard;
