@@ -3,7 +3,7 @@ import Web3 from 'web3';
 import '../styles/styles.css';
 import UserLoginArtifact from '../contracts/UserLogin.json';
 
-const contractAddress = "0x267b003DE19d953c3b3eA413CdF4852f86A9976f";
+const contractAddress = "0x4B9345B3d2aD30be33152EC5b81E5fF2982A7C2d";
 
 const Login = ({ web3, setContract, setAccount, setIsLoggedIn, setUserRole, onLogout }) => {
     const [username, setUsername] = useState('');
@@ -17,9 +17,13 @@ const Login = ({ web3, setContract, setAccount, setIsLoggedIn, setUserRole, onLo
             const contract = new web3.eth.Contract(UserLoginArtifact.abi, contractAddress);
             setContract(contract);
             try {
+                const startTime = performance.now();
                 const result = await contract.methods.login(username, password, role).call({ from: accounts[0] });
                 if (result) {
                     alert('Login successful!');
+                    const endTime = performance.now();
+                    const transactionTime = endTime - startTime;
+                    console.log(`Transaction completed in ${transactionTime.toFixed(2)} milliseconds`);
                     setIsLoggedIn(true);
                     setUserRole(role.toLowerCase());
                     
@@ -27,6 +31,7 @@ const Login = ({ web3, setContract, setAccount, setIsLoggedIn, setUserRole, onLo
                     localStorage.setItem('username', username);
                     localStorage.setItem('account', accounts[0]);
                     localStorage.setItem('role', role.toLowerCase());
+
                 } else {
                     setErrorMessage('Login failed. Please check your credentials.');
                 }
@@ -45,8 +50,12 @@ const Login = ({ web3, setContract, setAccount, setIsLoggedIn, setUserRole, onLo
             setContract(contract);
             try {
                 if (role === 'patient') {
+                    const startTime = performance.now();
                     await contract.methods.registerPatient(username, password).send({ from: accounts[0] });
                     alert('Patient registered successfully!');
+                    const endTime = performance.now();
+                    const transactionTime = endTime - startTime;
+                    console.log(`Transaction completed in ${transactionTime.toFixed(2)} milliseconds`);
                 } else {
                     setErrorMessage('Only patients can register themselves. Contact admin for other roles.');
                 }

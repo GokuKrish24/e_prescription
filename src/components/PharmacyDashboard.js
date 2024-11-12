@@ -7,7 +7,7 @@ const PharmacyDashboard = () => {
     const [prescription, setPrescription] = useState(null);
     const [error, setError] = useState(null);
 
-    const contractAddress = "0x267b003DE19d953c3b3eA413CdF4852f86A9976f"; // Replace with your contract address
+    const contractAddress = "0x4B9345B3d2aD30be33152EC5b81E5fF2982A7C2d"; // Replace with your contract address
 
     const handleInputChange = (e) => {
         setPrescriptionId(e.target.value);
@@ -25,9 +25,13 @@ const PharmacyDashboard = () => {
                 const provider = new ethers.BrowserProvider(window.ethereum);
                 const signer = await provider.getSigner();
                 const contract = new ethers.Contract(contractAddress, UserLogin.abi, signer);
+                const startTime = performance.now();
 
                 const fetchedPrescription = await contract.getPrescription(prescriptionId);
                 console.log("Fetched Prescription:", fetchedPrescription);
+                const endTime = performance.now();
+                const transactionTime = endTime - startTime;
+                console.log(`Transaction completed in ${transactionTime.toFixed(2)} milliseconds`);
 
                 setPrescription({
                     doctor: fetchedPrescription.doctor,

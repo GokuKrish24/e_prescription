@@ -18,6 +18,10 @@ const PatientDashboard = () => {
     const [prescriptions, setPrescriptions] = useState([]);
     const [showPrescriptions, setShowPrescriptions] = useState(false);
 
+    const [showReviewForm, setShowReviewForm] = useState(false);
+    const [reviewRating, setReviewRating] = useState(0);
+    const [reviewComment, setReviewComment] = useState("");
+    const [doctorAddress, setDoctorAddress] = useState("");
     // Predefined list of departments
     const departments = ["Neurology", "Dermatology", "Cardiology", "Orthopedic"];
     
@@ -25,7 +29,7 @@ const PatientDashboard = () => {
     const [currentAppointments, setCurrentAppointments] = useState([]);
     const [pastAppointments, setPastAppointments] = useState([]);
 
-    const contractAddress = "0x267b003DE19d953c3b3eA413CdF4852f86A9976f"; // Replace with your actual contract address
+    const contractAddress = "0x4B9345B3d2aD30be33152EC5b81E5fF2982A7C2d"; // Replace with your actual contract address
 
     // Fetch doctors and current appointments whenever the selected department changes
     useEffect(() => {
@@ -112,6 +116,44 @@ const PatientDashboard = () => {
         }
     };
 
+    const handleReviewClick = (doctor) => {
+        setDoctorAddress(doctor);  // Set the doctor's address (did)
+        setShowReviewForm(true);    // Show the review form modal
+    };
+
+    const handleReviewSubmission = async () => {
+        if (!reviewRating || !reviewComment) {
+            alert("Please provide both rating and comment for the review.");
+            return;
+        }
+
+        try {
+            // Ensure MetaMask is connected
+            if (typeof window.ethereum === "undefined") {
+                alert("Please install MetaMask to use this feature.");
+                return;
+            }
+
+            const provider = new ethers.BrowserProvider(window.ethereum);
+            const signer = await provider.getSigner();
+            const contract = new ethers.Contract(contractAddress, UserLogin.abi, signer);
+
+            // Submit the review to the smart contract
+            const tx = await contract.submitReview(doctorAddress, reviewRating, reviewComment);
+
+            await tx.wait();  // Wait for the transaction to be mined
+            alert("Review submitted successfully!");
+
+            // Reset review form and close modal
+            setReviewRating(0);
+            setReviewComment("");
+            setShowReviewForm(false);
+        } catch (error) {
+            console.error("Error submitting review:", error);
+            alert("Error submitting review. Please try again.");
+        }
+    };
+
     const handleBooking = async () => {
         if (!selectedDoctor || !patientName || !patientAge || !patientGender || !patientContact || !patientAppointmentDate || !patientAppointmentTime) {
             alert("Please fill in all fields to book an appointment.");
@@ -132,6 +174,8 @@ const PatientDashboard = () => {
             const contract = new ethers.Contract(contractAddress, UserLogin.abi, signer);
     
             try {
+                const startTime = performance.now();  // Start time
+    
                 const tx = await contract.bookAppointment(
                     doctorAddress,
                     patientName,
@@ -141,8 +185,16 @@ const PatientDashboard = () => {
                     formattedDate, // Pass the formatted date here
                     formattedTime  // Pass the formatted time here
                 );
-                await tx.wait();
+    
+                await tx.wait();  // Wait for the transaction to be mined
+                const endTime = performance.now();  // End time
+    
+                const transactionTime = endTime - startTime;  // Calculate transaction time
+    
+                console.log(`Transaction completed in ${transactionTime.toFixed(2)} milliseconds`);
+    
                 alert("Appointment booked successfully!");
+    
                 // Resetting fields after booking
                 setSelectedDoctor("");
                 setPatientName("");
@@ -151,6 +203,7 @@ const PatientDashboard = () => {
                 setPatientContact("");
                 setPatientAppointmentDate("");
                 setPatientAppointmentTime("");
+    
                 // Refresh current appointments
                 fetchCurrentAppointments(); // Refresh current appointments after booking
                 fetchPastAppointments();
@@ -160,6 +213,7 @@ const PatientDashboard = () => {
             }
         }
     };
+    
     
     
 
@@ -196,6 +250,7 @@ const PatientDashboard = () => {
             }
         }
     };
+
 
     return (
         <div style={styles.container}>
@@ -363,6 +418,7 @@ const PatientDashboard = () => {
                     <button style={styles.button} onClick={handleBooking}>
                         <FaCalendarCheck /> Book Appointment
                     </button>
+                    
                 </div>
             )}
 
@@ -423,11 +479,12 @@ const PatientDashboard = () => {
                             <th>Date</th>
                             <th>Time</th>
                             <th>Status</th>
+                            <th>Review</th>
                         </tr>
                     </thead>
                     <tbody>
                         {pastAppointments.map((appointment, index) => {
-                            const [AI,__, _, dname, name, age, gender, ___, status, date, time] = appointment;
+                            const [AI,uid, did, dname, name, age, gender, ___, status, date, time] = appointment;
                             
                             // Format date to YYYY-MM-DD
                             const formattedDate = `${date.toString().slice(0, 4)}-${date.toString().slice(4, 6)}-${date.toString().slice(6)}`;
@@ -444,6 +501,15 @@ const PatientDashboard = () => {
                                     <td style={styles.cell}>{formattedDate}</td>
                                     <td style={styles.cell}>{formattedTime}</td>
                                     <td style={styles.statusCellp}>{status}</td>
+                                    <td style={styles.cell}>
+                                        <button
+                                            className="btn btn-success"
+                                            style={styles.reviewButton}
+                                            onClick={() => handleReviewClick(did)}  // Pass the doctor address (did)
+                                        >
+                                            Give Review
+                                        </button>
+                                    </td>
                                 </tr>
                             );
                         })}
@@ -453,6 +519,62 @@ const PatientDashboard = () => {
                 <p>No past appointments found.</p>
             )}
 
+            {/* Review Form Modal */}
+{showReviewForm && (
+    <div className="modal fade show" style={{ display: 'block' }} aria-labelledby="reviewFormModal" aria-hidden="true">
+        <div className="modal-dialog">
+            <div className="modal-content">
+                <div className="modal-header">
+                    <h5 className="modal-title" id="reviewFormModal">Submit a Review</h5>
+                    <button
+                        type="button"
+                        className="btn-close"
+                        onClick={() => setShowReviewForm(false)}
+                        aria-label="Close"
+                    ></button>
+                </div>
+                <div className="modal-body">
+                    <div className="mb-3">
+                        <label htmlFor="rating" className="form-label">Rating (1-5):</label>
+                        <input
+                            type="number"
+                            min="1"
+                            max="5"
+                            id="rating"
+                            value={reviewRating}
+                            onChange={(e) => setReviewRating(Number(e.target.value))}
+                            className="form-control"
+                        />
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="comment" className="form-label">Comment:</label>
+                        <textarea
+                            id="comment"
+                            value={reviewComment}
+                            onChange={(e) => setReviewComment(e.target.value)}
+                            className="form-control"
+                            rows="4"
+                        />
+                    </div>
+                </div>
+                <div className="modal-footer">
+                    <button
+                        onClick={handleReviewSubmission}
+                        className="btn btn-primary"
+                    >
+                        Submit Review
+                    </button>
+                    <button
+                        onClick={() => setShowReviewForm(false)}
+                        className="btn btn-secondary"
+                    >
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+)}
 
         </div>
     );

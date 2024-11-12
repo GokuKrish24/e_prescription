@@ -11,7 +11,7 @@ const DoctorDashboard = () => {
     const [diagnosis, setDiagnosis] = useState("");
     const [medications, setMedications] = useState([{ name: "", dosage: "", frequency: "", instructions: "" }]);
     const [pastAppointments, setPastAppointments] = useState([]);
-    const contractAddress = "0x267b003DE19d953c3b3eA413CdF4852f86A9976f"; // Replace with your actual contract address
+    const contractAddress = "0x4B9345B3d2aD30be33152EC5b81E5fF2982A7C2d"; // Replace with your actual contract address
 
     useEffect(() => {
         const loadBlockchainData = async () => {
@@ -94,12 +94,14 @@ const DoctorDashboard = () => {
             const provider = new ethers.BrowserProvider(window.ethereum);
             const signer = await provider.getSigner();
             const contract = new ethers.Contract(contractAddress, UserLogin.abi, signer);
-    
+            const startTime = performance.now();
             // Submit the prescription
             const tx1 = await contract.addPrescription(patientAddr, diagnosis, formattedMedications, dateNow, patName, docName);
             await tx1.wait();
+            const endTime = performance.now();
             alert("Prescription submitted successfully!");
-    
+            const transactionTime = endTime - startTime;
+            console.log(`Transaction completed in ${transactionTime.toFixed(2)} milliseconds`);
             // Complete the appointment
             const tx2 = await contract.completeAppointment(patientAddr, docAddr, Ai); // Make sure the parameters are correct
             await tx2.wait();
