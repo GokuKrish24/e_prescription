@@ -7,6 +7,8 @@ const PatientDashboard = () => {
     const [doctors, setDoctors] = useState([]);
     const [department, setDepartment] = useState("Neurology"); // Set default department
     const [selectedDoctor, setSelectedDoctor] = useState(""); // State to hold the selected doctor
+    const [doctorReviews, setDoctorReviews] = useState([]);
+    const [showReviews, setShowReviews] = useState(false);
 
     // Patient details
     const [patientName, setPatientName] = useState("");
@@ -100,6 +102,28 @@ const PatientDashboard = () => {
 
     const handleDoctorChange = (e) => {
         setSelectedDoctor(e.target.value); // Update the selected doctor
+    };
+
+    const handleSeeReviewsClick = async (doctorAddress) => {
+        try {
+            // Ensure MetaMask is connected
+            if (typeof window.ethereum === "undefined") {
+                alert("Please install MetaMask to use this feature.");
+                return;
+            }
+    
+            const provider = new ethers.BrowserProvider(window.ethereum);
+            const signer = await provider.getSigner();
+            const contract = new ethers.Contract(contractAddress, UserLogin.abi, signer);
+    
+            // Fetch reviews from the smart contract
+            const reviews = await contract.getDoctorReviews(doctorAddress);
+            setDoctorReviews(reviews);
+            setShowReviews(true);  // Show reviews modal
+        } catch (error) {
+            console.error("Error fetching reviews:", error);
+            alert("Error fetching reviews. Please try again.");
+        }
     };
 
     const handleViewPrescriptions = async () => {
@@ -342,11 +366,69 @@ const PatientDashboard = () => {
                                     Experience: {doctor.yearsOfExperience.toString()} years <br />
                                     Rating: {doctor.rating.toString()}
                                 </label>
+                                {/* Add "See Reviews" Button */}
+                                <button
+                                    className="btn btn-info"
+                                    onClick={() => handleSeeReviewsClick(doctor.doctorAddress)}
+                                >
+                                    See Reviews
+                                </button>
                             </li>
                         ))}
                     </ul>
                 ) : (
                     <p>No doctors available in this department.</p>
+                )}
+
+                {/* Display Reviews Modal */}
+                {showReviews && (
+                    <div className="modal fade show" style={{ display: 'block' }} aria-labelledby="reviewsModal" aria-hidden="true">
+                        <div className="modal-dialog">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h5 className="modal-title" id="reviewsModal">Reviews{selectedDoctor}</h5>
+                                    <button
+                                        type="button"
+                                        className="btn-close"
+                                        onClick={() => setShowReviews(false)}
+                                        aria-label="Close"
+                                    ></button>
+                                </div>
+                                <div className="modal-body">
+                                    {doctorReviews.length > 0 ? (
+                                        <ul style={{ listStyleType: 'none', paddingLeft: 0 }}>
+                                        {doctorReviews.map((review, index) => (
+                                            <li key={index} style={{ marginBottom: '15px' }}>
+                                                <strong 
+                                                    style={{ 
+                                                        textDecoration: 'underline', 
+                                                        backgroundColor: '#ffff99', // Light yellow highlight
+                                                        padding: '2px'
+                                                    }}
+                                                >
+                                                    Patient {index + 1}
+                                                </strong><br />
+                                                <strong>Rating:</strong> {review.rating.toString()} <br />
+                                                <strong>Comment:</strong> {review.comment} <br />
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    ) : (
+                                        <p>No reviews available for this doctor.</p>
+                                    )}
+                                </div>
+                                <div className="modal-footer">
+                                    <button
+                                        type="button"
+                                        className="btn btn-secondary"
+                                        onClick={() => setShowReviews(false)}
+                                    >
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 )}
             </div>
 
